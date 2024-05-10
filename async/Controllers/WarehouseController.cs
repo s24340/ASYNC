@@ -32,7 +32,7 @@ namespace async.Controllers
         }
     }
     [ApiController]
-    [Route("api/warehouses2")]
+    [Route("api/warehousesSelect")]
     public class Warehouse2Controller : ControllerBase
     {
         private readonly IWarehouseDb _wearehouseDb;
