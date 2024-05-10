@@ -29,7 +29,24 @@ namespace async.Controllers
             {
                 return StatusCode(400, "Posting error! There is something wrong");
             }
+        }
+    }
+    [ApiController]
+    [Route("api/warehouses2")]
+    public class Warehouse2Controller : ControllerBase
+    {
+        private readonly IWarehouseDb _wearehouseDb;
 
+        public Warehouse2Controller(IWarehouseDb warehouseDb)
+        {
+            _wearehouseDb = warehouseDb;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetWarehouses(Warehouse warehouse)
+        {
+            var result = await _wearehouseDb.PostWarehouseSelect(warehouse);
+            return Ok(result);
         }
     }
 }

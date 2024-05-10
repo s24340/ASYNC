@@ -43,7 +43,56 @@ public class WarehouseDb : IWarehouseDb
             }
         }
         return result;
-    }
+    } 
+    public async Task<int> PostWarehouseSelect (Warehouse warehouse)
+     {
+         var order = 0;
+         var price = 0;
+         using ( var conn = new SqlConnection(_sqlConn) )
+         {
+             conn.Open();
+             using ( SqlTransaction transaction = conn.BeginTransaction() )
+             {
+                 using ( var comm = new SqlCommand() )
+                 {
+                     comm.Connection = conn;
+                     comm.Transaction = transaction;
+                     comm.CommandText = "SELECT * FROM WAREHOUSE WHERE IDWAREHOUSE = " + warehouse.IdProduct;
+                 }
+
+                 using ( var comm = new SqlCommand() )
+                 {
+                     comm.CommandText = "SELECT * FROM ORDER WHERE WHERE IDPRODUCT = " + warehouse.IdProduct + " AND AMOUNT = " + warehouse.Amount;
+                     using ( SqlDataReader dr = await comm.ExecuteReaderAsync() )
+                     { 
+                         order = int.Parse( dr["IdOrder"].ToString() );
+                     }
+                 }
+
+                 using ( var comm = new SqlCommand() )
+                 {
+                     comm.CommandText = "SELECT * FROM PRODUCT_WAREHOUSE WHERE IDORDER = " + order;
+                 }
+
+                 using ( var comm = new SqlCommand() )
+                 {
+                     comm.CommandText = "update order set FulfilledAt = " + DateTime.Now + " where idorder = " + order;
+                     comm.ExecuteNonQuery();
+                 }
+
+                 using ( var comm = new SqlCommand() )
+                 {
+                     comm.CommandText = "Select price from product where idproduct = " + warehouse.IdProduct;
+                     await comm.ExecuteNonQueryAsync();
+                     SqlDataReader dr = await comm.ExecuteReaderAsync();
+                     price = int.Parse(dr["price"].ToString());
+                     comm.CommandText = $"INSERT INTO Product_Warehouse(IdWarehouse, IdProduct, IdOrder, Amount, Price, CreatedAt) VALUES( {warehouse.IdWarehouse}, {warehouse.IdProduct}, {order}, {warehouse.Amount}, {warehouse.Amount * price}, {warehouse.CreatedAt} );";
+                     await comm.ExecuteNonQueryAsync();
+                 }
+                 await transaction.CommitAsync();
+                 await conn.CloseAsync();
+             }
+         }
+         return 1;
+     }
 }
-
-
