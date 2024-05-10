@@ -37,7 +37,10 @@ public class WarehouseDb : IWarehouseDb
                     }
                 }
             }
-
+            if (conn.State != System.Data.ConnectionState.Closed)
+            {
+                await conn.CloseAsync();
+            }
         }
         return result;
     }
